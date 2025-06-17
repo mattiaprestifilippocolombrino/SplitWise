@@ -2,11 +2,11 @@
 pragma solidity ^0.8.24;
 import "./TrustToken.sol";
 
-/// Tipologie di suddivisione di una spesa
+/// Tipologie di suddivisione di spesa
 enum SplitType {
-    Equal,       // suddividi in parti uguali
-    Exact,       // importi esatti forniti dall’utente
-    Percentage   // percentuali fornite dall’utente (somma = 10000)
+    Equal,       // parti uguali
+    Exact,       // importi esatti 
+    Percentage   // percentuali
 }
 
 /// Struttura dati che rappresenta un gruppo 
@@ -19,7 +19,7 @@ struct Group {
 }
 
 contract SplitwiseManager {
-    TrustToken public immutable trustToken;       // riferimento al token ERC-20 usato per i pagamenti
+    TrustToken public immutable trustToken;       // riferimento al token ERC-20
     uint256 public nextGroupId;        // counter degli id dei gruppi
     mapping(uint256 => Group) private groups;     // mapping che tiene traccia dei gruppi gestiti dal contratto
 
@@ -40,13 +40,13 @@ contract SplitwiseManager {
         _;
     }
 
-    /// Costruttore che assegna al riferimento trustToken l'indirizzo del contratto TrustToken passato 
+    /// Costruttore che assegna al riferimento trustToken l'indirizzo del contratto TrustToken deployato 
     constructor(address tokenAddress) {
         trustToken = TrustToken(tokenAddress);
     }
 
     ///FUNZIONI DI UTILITY chiamabili dall'esterno, che non modificano lo stato della blockchain
-    ///Restituisce il saldo di user all’interno di groupId
+    ///Restituisce il saldo di un dato utente di un dato gruppo
     function getNetBalance(uint256 groupId, address user) external view returns (int256) {
         return groups[groupId].netBalance[user];
     }
@@ -62,7 +62,7 @@ contract SplitwiseManager {
     }
 
 
-    ///INTERNAL UTILITY. Controlla che newMember non sia gia presente: In tal caso, lo aggiunge al gruppo
+    ///INTERNAL UTILITY. Aggiunge al gruppo un nuovo membro, se non gia presente
     function _addMemberToGroup(Group storage groupData, address newMember) internal {
         if (!groupData.isMember[newMember]) {
             groupData.isMember[newMember] = true;
@@ -72,7 +72,7 @@ contract SplitwiseManager {
 
     ///Funzione che crea un nuovo gruppo e ne restituisce l’id. Aggiunge il chiamante e i membri forniti nel gruppo.
     /// @param groupName nome del gruppo
-    /// @param initialMembers elenco di membri da aggiungere (opzionale)
+    /// @param initialMembers elenco di membri da aggiungere
     function createGroup(string calldata groupName, address[] calldata initialMembers) external returns (uint256 groupId)
     {
         groupId = nextGroupId++;
@@ -85,7 +85,7 @@ contract SplitwiseManager {
         emit GroupCreated(groupId, groupName);
     }
 
-    /// Funzione esterna che abilita a chiamare la funzione interna addMemberToGroup al chiamante sul proprio indirizzo.
+    /// Funzione che permette ad un utente esterno di unirsi ad un gruppo
     function joinGroup(uint256 groupId) external {
         _addMemberToGroup(groups[groupId], msg.sender);
         emit MemberJoined(groupId, msg.sender);
@@ -94,7 +94,7 @@ contract SplitwiseManager {
 
 
     /// @param groupId          id del gruppo
-    /// @param totalAmount      importo totale (unità virtuali non token)
+    /// @param totalAmount      importo pagato
     /// @param paidBy           indirizzo che ha pagato
     /// @param participants     elenco di partecipanti allo split
     /// @param splitType        tipo di split (Equal/Exact/Percentage)
