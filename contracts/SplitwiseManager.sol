@@ -268,7 +268,7 @@ contract SplitwiseManager {
     }
 
 
-    /// Insertion-sort decrescente su array paralleli (addr/values)
+    /// Insertion-sort decrescente su array paralleli (addr/values). No ricorsione e no array aggiuntivi, va bene per array relativamente piccoli
     function _sortDescending(address[] memory addressArray, int256[] memory valueArray, uint256 activeLength) private pure {
         for (uint256 i = 1; i < activeLength; ++i) {
             address keyAddress = addressArray[i];
